@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    // https://stackoverflow.com/questions/30657619/programmatically-disabling-shutdown-hook-in-log4j-2
+    // https://stackoverflow.com/questions/25877102/how-to-properly-shutdown-log4j2/25880361#25880361
+-->
+<Configuration shutdownHook="disable" packages="org.apache.logging.log4j.core,io.sentry.log4j2">
+    <!-- Logging Properties -->
+    <Properties>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} %X %C [%p]: %m%n</Property>
+        <Property name="APP_LOG_ROOT">log</Property>
+    </Properties>
+    <Appenders>
+        <!-- Console Appender -->
+        <Console name="Console" target="SYSTEM_OUT" follow="true">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+        <Sentry name="Sentry"
+                minimumEventLevel="WARN"
+        />
+        <!-- File Appenders on need basis -->
+        <RollingFile name="debugLog" fileName="${APP_LOG_ROOT}/debug.log" filePattern="${APP_LOG_ROOT}/debug.log.%i">
+            <LevelRangeFilter maxLevel="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="3MB"/>
+            </Policies>
+            <DefaultRolloverStrategy fileIndex="min" max="3"/>
+        </RollingFile>
+        <RollingFile name="infoLog" fileName="${APP_LOG_ROOT}/info.log" filePattern="${APP_LOG_ROOT}/info.log.%i">
+            <LevelRangeFilter maxLevel="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="3MB"/>
+            </Policies>
+            <DefaultRolloverStrategy fileIndex="min" max="3"/>
+        </RollingFile>
+        <RollingFile name="errorLog" fileName="${APP_LOG_ROOT}/error.log" filePattern="${APP_LOG_ROOT}/error.log.%i">
+            <LevelRangeFilter maxLevel="WARN" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="3MB"/>
+            </Policies>
+            <DefaultRolloverStrategy fileIndex="min" max="3"/>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Root level="TRACE">
+            <AppenderRef ref="debugLog"/>
+            <AppenderRef ref="infoLog"/>
+            <AppenderRef ref="errorLog"/>
+            <AppenderRef ref="Sentry"/>
+            <!-- REMOVE BEFORE PRODUCTION -->
+            <!--             <AppenderRef ref="Console"/>-->
+        </Root>
+    </Loggers>
+</Configuration>
